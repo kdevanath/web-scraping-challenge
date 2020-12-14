@@ -1,17 +1,12 @@
 #!/usr/bin/env /Users/penndata/anaconda3/envs/PythonData
 # coding: utf-8
 
-# In[40]:
-
 import time
 import os
 import re
 from splinter import Browser
 import requests
 import pandas as pd
-
-
-# In[19]:
 
 
 from bs4 import BeautifulSoup
@@ -55,12 +50,10 @@ def scrape():
     html = browser.html
     # Retrieve page with the requests module
     #response = requests.get(url)
-    # In[26]:
 
     # Create BeautifulSoup object; parse with 'html.parser'
     image_soup = BeautifulSoup(html, 'html.parser')
 
-    # In[27]:
     #scrape for featured image 
     results = image_soup.find('article', class_="carousel_item")
     image_url = re.findall(r"'(.*?)'", results.attrs['style'])
@@ -77,28 +70,30 @@ def scrape():
     #store this in mars_dict to render
     mars_dict['mars_facts'] = mars_table
 
-    # In[91]:
-
     hemisphere_list = []
     base_url = 'https://astrogeology.usgs.gov'
     hemis_urls = f"{base_url}/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
     hemis_response = requests.get(hemis_urls)
     hemis_soup = BeautifulSoup(hemis_response.text, 'html.parser')
-    refs = hemis_soup.find_all('img',class_ = 'wide_image') #find_all('h3')
+    refs = hemis_soup.find_all('a',class_ = 'itemLink') #find_all('h3')
     hemisphere_image_dict = {}
     for ref in refs:
-        #print(ref)
+    #   print(ref)
         title = ref.find('h3')
         hemisphere_image_dict['title'] = title.text
         image_url = ref.get('href')
-        hemisphere_image_dict['img_url']= base_url + image_url
+        url = base_url+image_url
+        print(url)
+        browser.visit(base_url+image_url)
+        html = browser.html
+        soup = BeautifulSoup(html, 'html.parser')
+        wrapper = soup.find('div',class_ = 'downloads')
+        img_url = wrapper.find('a')['href']
+        print(img_url)
+        hemisphere_image_dict['img_url']= img_url
         hemisphere_list.append(hemisphere_image_dict.copy())
-        
-        #print(hemisphere_image_dict['img_url'])
+        print(title, img_url)
 
-    mars_dict['img_url'] = 'https://astrogeology.usgs.gov/search/map/Mars/Viking/cerberus_enhanced'
-
-    print(mars_dict['img_url'])
     mars_dict['hemispheres'] = hemisphere_list.copy()
     for h in mars_dict['hemispheres']:
         print(h)
@@ -106,8 +101,6 @@ def scrape():
     print(mars_dict)
     browser.quit()
     return mars_dict
-
-# In[ ]:
 
 
 
