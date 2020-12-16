@@ -16,8 +16,6 @@ def scrape():
     executable_path = {'executable_path': ChromeDriverManager().install()}
     browser = Browser('chrome', **executable_path, headless=False)
     
-
-
     base_url = 'https://www.jpl.nasa.gov'
     mars_dict = {}
 
@@ -70,6 +68,7 @@ def scrape():
     #store this in mars_dict to render
     mars_dict['mars_facts'] = mars_table
 
+    #Retrieve all the 4 hemispheres, get the partial html
     hemisphere_list = []
     base_url = 'https://astrogeology.usgs.gov'
     hemis_urls = f"{base_url}/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
@@ -83,20 +82,23 @@ def scrape():
         hemisphere_image_dict['title'] = title.text
         image_url = ref.get('href')
         url = base_url+image_url
-        print(url)
+        #print(url)
+        #visit the url and scrape the reference to full image
         browser.visit(base_url+image_url)
+        time.sleep(1)
         html = browser.html
         soup = BeautifulSoup(html, 'html.parser')
         wrapper = soup.find('div',class_ = 'downloads')
         img_url = wrapper.find('a')['href']
-        print(img_url)
+        #print(img_url)
         hemisphere_image_dict['img_url']= img_url
         hemisphere_list.append(hemisphere_image_dict.copy())
-        print(title, img_url)
+        #print(title, img_url)
 
+    #add this to dictionary
     mars_dict['hemispheres'] = hemisphere_list.copy()
-    for h in mars_dict['hemispheres']:
-        print(h)
+    #for h in mars_dict['hemispheres']:
+        #print(h)
     
     print(mars_dict)
     browser.quit()
